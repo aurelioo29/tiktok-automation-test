@@ -1,0 +1,18 @@
+{
+  "name": "tiktok-automation-test",
+  "version": "1.0.0",
+  "description": "Automation Engineer Test - Puppeteer (TikTok login, scroll, like 5 videos)",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "puppeteer": "^24.37.0"
+  }
+}
