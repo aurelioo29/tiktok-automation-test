@@ -1,10 +1,15 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 export const config = {
-  email: process.env.TIKTOK_EMAIL || "",
-  password: process.env.TIKTOK_PASSWORD || "",
-  likeTarget: Number(process.env.LIKE_TARGET || 5),
-  headless: (process.env.HEADLESS || "false").toLowerCase() === "true",
-  cookiesPath: process.env.COOKIES_PATH || "./tiktok-cookies.json",
+  edgePath:
+    process.env.EDGE_PATH ||
+    "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+
+  // ✅ profile khusus project (default)
+  userDataDir:
+    process.env.EDGE_USER_DATA_DIR ||
+    "E:\\Coding\\tiktok-automation-test\\.edge-profile",
+
+  likeTarget: Number(process.env.LIKE_TARGET || 8),
+  maxSteps: Number(process.env.MAX_STEPS || 60),
 };

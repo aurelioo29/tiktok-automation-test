@@ -1,13 +1,20 @@
-import { humanDelay, log, sleep, waitForAnySelector } from "./utils.js";
+import {
+  log,
+  sleep,
+  humanDelay,
+  waitForAnySelector,
+  closeCommonPopups,
+} from "./utils.js";
 
 async function findLikeButton(page) {
-  // TikTok DOM can vary; we keep it robust-ish
   const selectors = [
     'button[data-e2e="like-icon"]',
+    '[data-e2e="like-icon"] button',
     'button[aria-label*="Like"]',
     'button[aria-label*="like"]',
+    'button[type="button"][aria-pressed]',
   ];
-  return await waitForAnySelector(page, selectors, 6000);
+  return await waitForAnySelector(page, selectors, 12000);
 }
 
 async function isAlreadyLiked(page, btn) {
@@ -16,50 +23,77 @@ async function isAlreadyLiked(page, btn) {
       (el) => el.getAttribute("aria-pressed"),
       btn,
     );
-    if (pressed === "true") return true;
-  } catch {}
-  return false;
+    return pressed === "true";
+  } catch {
+    return false;
+  }
 }
 
-export async function scrollAndLike(page, likeTarget = 5) {
-  let likedCount = 0;
-  let safetySteps = 0;
+async function scrollNext(page) {
+  const r = Math.random();
+  if (r < 0.55) {
+    await page.keyboard.press("ArrowDown");
+    log("SCROLL", "ArrowDown");
+  } else if (r < 0.85) {
+    await page.keyboard.press("PageDown");
+    log("SCROLL", "PageDown");
+  } else {
+    await page.mouse.wheel({ deltaY: 900 + Math.floor(Math.random() * 800) });
+    log("SCROLL", "MouseWheel");
+  }
+}
 
-  log("FLOW", `Start scrolling & liking. Target: ${likeTarget}`);
+export async function scrollAndLike(page, { likeTarget = 8, maxSteps = 60 }) {
+  let liked = 0;
+  let steps = 0;
 
-  await page.goto("https://www.tiktok.com", { waitUntil: "networkidle2" });
-  await humanDelay(900, 1500);
+  log("FLOW", `Start. Target likes=${likeTarget}, maxSteps=${maxSteps}`);
 
-  while (likedCount < likeTarget && safetySteps < 80) {
-    safetySteps++;
+  // tunggu ada video
+  await waitForAnySelector(page, ["video"], 20000);
+  await humanDelay(800, 1600);
 
-    // let video render
-    await sleep(1200);
+  while (steps < maxSteps && liked < likeTarget) {
+    steps++;
 
-    const likeBtn = await findLikeButton(page);
+    await closeCommonPopups(page);
 
-    if (likeBtn) {
-      const already = await isAlreadyLiked(page, likeBtn);
+    // watch time 2.5s–7s
+    const watchMs = 2500 + Math.random() * 4500;
+    log("WATCH", `${Math.round(watchMs / 1000)}s`);
+    await sleep(watchMs);
 
-      if (!already) {
-        await humanDelay(250, 650);
-        await likeBtn.click({ delay: 60 });
-        likedCount++;
-        log("LIKE", `Liked video ✅ (${likedCount}/${likeTarget})`);
-        await humanDelay(900, 1500);
+    const btn = await findLikeButton(page);
+
+    if (btn) {
+      const already = await isAlreadyLiked(page, btn);
+
+      // biar lebih manusia: gak semua di-like
+      const shouldLike = Math.random() < 0.7;
+
+      if (!already && shouldLike) {
+        await humanDelay(250, 900);
+        try {
+          await btn.click({ delay: 80 });
+          liked++;
+          log("LIKE", `✅ ${liked}/${likeTarget}`);
+        } catch {
+          log("LIKE", "Click failed");
+        }
+        await humanDelay(900, 2000);
+      } else if (already) {
+        log("LIKE", "Already liked → skip");
       } else {
-        log("LIKE", "Already liked, skipping.");
+        log("LIKE", "Skip (human moment)");
       }
     } else {
-      log("LIKE", "Like button not found on this view, skipping.");
+      log("LIKE", "Like button not found → skip");
     }
 
-    // scroll next
-    await humanDelay(400, 900);
-    await page.keyboard.press("ArrowDown");
-    log("SCROLL", "Next video (ArrowDown)");
-    await humanDelay(1000, 1800);
+    await humanDelay(500, 1200);
+    await scrollNext(page);
+    await humanDelay(1200, 2200);
   }
 
-  log("DONE", `Finished. Total likes: ${likedCount}/${likeTarget}`);
+  log("DONE", `Finished. liked=${liked}, steps=${steps}`);
 }
