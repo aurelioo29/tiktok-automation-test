@@ -1,64 +1,83 @@
-# TikTok Automation Test — Puppeteer
+# TikTok Automation Test — Puppeteer (Edge Profile Mode)
 
-This project automates the following flow (per the test requirements):
+This project automates TikTok browsing using **Node.js + Puppeteer + Microsoft Edge**, with support for manual login, persistent sessions, and human-like automation behavior.
 
-1. Open TikTok
-2. Ensure the session is logged in (via saved cookies, or manual login once)
-3. Scroll through videos
-4. Like 5 different videos while scrolling
-
-It uses:
-
-- **Node.js + Puppeteer**
-- **async/await**
-- **human-like delays**
-- **action logging** (login, scroll, like)
-- **no hardcoded credentials** (reads from `.env`)
+This approach avoids automated login to reduce account lock risk and ensures stable session reuse.
 
 ---
 
-## Prerequisites
+# Features
 
-- **Node.js** (recommended: Node 18+)
-- **npm** (comes with Node)
+- Opens TikTok `/foryou` feed
+- Detects login status automatically
+- Supports manual login once, then reuses saved session
+- Human-like scrolling behavior
+- Optional auto-like functionality
+- Terminal trigger control (Press Enter to start)
+- Guest mode support (scroll without login)
+- No credentials stored in code or `.env`
 
 ---
 
-## Setup
+# Tech Stack
 
-### 1) Install dependencies
+- Node.js
+- Puppeteer
+- Microsoft Edge
+- async / await
+- dotenv
+
+---
+
+# Prerequisites
+
+Install the following:
+
+- Node.js (recommended: v18–v22 LTS)
+- npm
+- Microsoft Edge browser
+
+Verify Edge path:
+
+```bash
+"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --version
+```
+
+---
+
+# Setup
+
+## 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2) Create environment file
-
-Copy the example file:
+## 2. Create environment file
 
 ```bash
 cp .env.example .env
 ```
 
-### 3) Fill your test credentials in `.env`
-
-Example:
+Example `.env`:
 
 ```bash
-TIKTOK_EMAIL="your_test_email@example.com"
-TIKTOK_PASSWORD="your_password_here"
+EDGE_PATH=C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+
+EDGE_USER_DATA_DIR=E:\Coding\tiktok-automation-test\.edge-profile
 
 LIKE_TARGET=5
-HEADLESS=false
-COOKIES_PATH="./tiktok-cookies.json"
+MAX_STEPS=60
 ```
 
 ---
 
-## Run
+## First Run (Manual Login Required)
 
-Start the script
+Run:
 
 ```bash
 npm start
 ```
+
+Microsoft Edge will open automatically.
